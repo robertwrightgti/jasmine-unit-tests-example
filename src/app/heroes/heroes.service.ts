@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 
 import { Hero } from './hero';
 import { HttpErrorHandler, HandleError } from '../http-error-handler.service';
-import { MyService } from './myService';
+import { VillainsService } from './villainsService';
 
 const httpOptions = {
     headers: new HttpHeaders({
@@ -23,14 +23,13 @@ export class HeroesService {
 
     constructor(
         private http: HttpClient,
-        private myService: MyService,
+        private villainsService: VillainsService,
         httpErrorHandler: HttpErrorHandler) {
         this.handleError = httpErrorHandler.createHandleError('HeroesService');
     }
 
-    // call sayHello method on myService
-    greeting(name: string): string {
-        return this.myService.sayHello(name);
+    villainLastWords() {
+        return this.villainsService.lastWords();
     }
 
     /** GET heroes from the server */
@@ -39,6 +38,10 @@ export class HeroesService {
             .pipe(
                 catchError(this.handleError('getHeroes', []))
             );
+    }
+
+    getVillains(): Observable<Hero[]> {
+        return this.villainsService.getVillains();
     }
 
     /* GET heroes whose name contains search term */

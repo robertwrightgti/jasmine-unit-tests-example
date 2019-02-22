@@ -8,13 +8,14 @@ import { Hero } from './hero';
 import { HeroesService } from './heroes.service';
 import { HttpErrorHandler } from '../http-error-handler.service';
 import { MessageService } from '../message.service';
-import { MyService } from './myService';
+import { VillainsService } from './villainsService';
+import { Villain } from './villain';
 
 describe('HeroesService', () => {
     let httpClient: HttpClient;
     let httpTestingController: HttpTestingController;
     let heroService: HeroesService;
-    let myService: MyService;
+    let villainsService: VillainsService;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -23,19 +24,18 @@ describe('HeroesService', () => {
             // Provide the service-under-test and its dependencies
             providers: [
                 HeroesService,
-                MyService,
+                VillainsService,
                 HttpErrorHandler,
                 MessageService
             ]
         });
-
 
         // Inject the http, test controller, and service-under-test
         // as they will be referenced by each test.
         httpClient = TestBed.get(HttpClient);
         httpTestingController = TestBed.get(HttpTestingController);
         heroService = TestBed.get(HeroesService);
-        myService = TestBed.get(MyService);
+        villainsService = TestBed.get(VillainsService);
     });
 
     afterEach(() => {
@@ -44,18 +44,50 @@ describe('HeroesService', () => {
     });
 
     /// HeroService method tests begin ///
+    describe('#lastWords', () => {
 
-    describe('#greeting', () => {
-        let expectedResult: string;
+        const expectedResult = "I'll get you"
+
+        beforeEach(() => {
+            // get the service we are testing
+            heroService = TestBed.get(HeroesService);
+
+            // get the dependency that's being injected
+            villainsService = TestBed.get(VillainsService);
+            // override the behaviour of its method
+            villainsService.lastWords = () => expectedResult;
+        })
+
+        it("should override the behaviour of villainsService.lastWords()", () => {
+            const result = heroService.villainLastWords();
+            console.log(result)
+            expect(result).toEqual(expectedResult);
+        })
+    })
+
+    describe('#getVillains', () => {
+        let expectedVillains: Villain[];
 
         beforeEach(() => {
             heroService = TestBed.get(HeroesService);
-            expectedResult = "Hello, barry";
+            expectedVillains = [
+                { id: 1000, name: 'Doctor Doom' },
+                { id: 1001, name: 'Mole Man' }
+            ]
         });
 
-        it("should return the expected greeting (called once)", () => {
-            const result = heroService.greeting("barry");
-            expect(result).toEqual(expectedResult);
+        it("should return expected villains (called once)", () => {
+            heroService.getVillains().subscribe(
+                villains => expect(villains).toEqual(expectedVillains, 'should return expected villains'),
+                fail
+            );
+
+            // VillainsService should have made one request to GET villains from expected URL
+            const req = httpTestingController.expectOne(villainsService.villainsUrl);
+            expect(req.request.method).toEqual("GET");
+
+            // Force response with mock villains
+            req.flush(expectedVillains);
         })
     })
 

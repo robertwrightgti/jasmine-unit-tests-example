@@ -7,6 +7,7 @@ import { catchError } from 'rxjs/operators';
 
 import { HttpErrorHandler, HandleError } from '../http-error-handler.service';
 import { Hero } from './hero';
+import { Villain } from './villain';
 
 const httpOptions = {
     headers: new HttpHeaders({
@@ -16,9 +17,9 @@ const httpOptions = {
 };
 
 @Injectable()
-export class MyService {
+export class VillainsService {
 
-    heroesUrl = 'api/heroes';  // URL to web api
+    villainsUrl = 'api/villains';  // URL to web api
     private handleError: HandleError;
     
     constructor(
@@ -27,15 +28,15 @@ export class MyService {
             this.handleError = httpErrorHandler.createHandleError('MyService');
     }
 
-    sayHello(name: string): string {
-        return `Hello, ${name}`;
+    lastWords(): string {
+        return "I'll be back!";
     }
 
     /** GET heroes from the server */
-    getHeroes(): Observable<Hero[]> {
-        return this.http.get<Hero[]>(this.heroesUrl)
+    getVillains(): Observable<Villain[]> {
+        return this.http.get<Villain[]>(this.villainsUrl)
             .pipe(
-                catchError(this.handleError('getHeroes', []))
+                catchError(this.handleError('getVillains', []))
             );
     }
 }
