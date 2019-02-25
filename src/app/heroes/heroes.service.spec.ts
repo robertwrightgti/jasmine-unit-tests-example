@@ -10,22 +10,37 @@ import { HttpErrorHandler } from '../http-error-handler.service';
 import { MessageService } from '../message.service';
 import { VillainsService } from './villainsService';
 import { Villain } from './villain';
+import { EvilPlanFactory } from './evilPlanFactory';
+import { Observable, of } from 'rxjs';
+import { nextContextImpl } from '@angular/core/src/render3/state';
+
+class VillainsServiceMock {
+    lastWords(): string {
+        return null;
+    }
+
+    getVillains(): Observable<Hero[]> {
+        return null;
+    }
+}
 
 describe('HeroesService', () => {
     let httpClient: HttpClient;
     let httpTestingController: HttpTestingController;
     let heroService: HeroesService;
-    let villainsService: VillainsService;
+    let villainsService_mock: VillainsService;
 
     beforeEach(() => {
+
         TestBed.configureTestingModule({
             // Import the HttpClient mocking services
             imports: [HttpClientTestingModule],
             // Provide the service-under-test and its dependencies
             providers: [
                 HeroesService,
-                VillainsService,
+                { provide: VillainsService, useClass: VillainsServiceMock },
                 HttpErrorHandler,
+                // EvilPlanFactory,
                 MessageService
             ]
         });
@@ -35,7 +50,6 @@ describe('HeroesService', () => {
         httpClient = TestBed.get(HttpClient);
         httpTestingController = TestBed.get(HttpTestingController);
         heroService = TestBed.get(HeroesService);
-        villainsService = TestBed.get(VillainsService);
     });
 
     afterEach(() => {
@@ -46,49 +60,65 @@ describe('HeroesService', () => {
     /// HeroService method tests begin ///
     describe('#lastWords', () => {
 
-        const expectedResult = "I'll get you"
+        const expectedResult = "Curses!"
 
         beforeEach(() => {
             // get the service we are testing
             heroService = TestBed.get(HeroesService);
 
             // get the dependency that's being injected
-            villainsService = TestBed.get(VillainsService);
-            // override the behaviour of its method
-            villainsService.lastWords = () => expectedResult;
+            villainsService_mock = TestBed.get(VillainsService);
+        })
+
+        it("should call villainService.lastWords()", () => {
+            spyOn(villainsService_mock, "lastWords");
+            // invoke
+            heroService.villainLastWords();
+            // assert
+            expect(villainsService_mock.lastWords).toHaveBeenCalled();            
         })
 
         it("should override the behaviour of villainsService.lastWords()", () => {
+            // setup (mock the method result)
+            villainsService_mock.lastWords = () => expectedResult;
+            // invoke
             const result = heroService.villainLastWords();
-            console.log(result)
+            // assert
             expect(result).toEqual(expectedResult);
         })
     })
 
-    describe('#getVillains', () => {
-        let expectedVillains: Villain[];
+    // describe('#getVillains', () => {
+    //     let expectedVillains: Villain[];
 
-        beforeEach(() => {
-            heroService = TestBed.get(HeroesService);
-            expectedVillains = [
-                { id: 1000, name: 'Doctor Doom' },
-                { id: 1001, name: 'Mole Man' }
-            ]
-        });
+    //     beforeEach(() => {
+    //         heroService = TestBed.get(HeroesService);
+    //         villainsService_mock = TestBed.get(VillainsService);
 
-        it("should return expected villains (called once)", () => {
-            heroService.getVillains().subscribe(
-                villains => expect(villains).toEqual(expectedVillains, 'should return expected villains'),
-                fail
-            );
+    //         expectedVillains = [
+    //             { id: 1000, name: 'Doctor Doom' },
+    //             { id: 1001, name: 'Mole Man' }
+    //         ]
 
-            // VillainsService should have made one request to GET villains from expected URL
-            const req = httpTestingController.expectOne(villainsService.villainsUrl);
-            expect(req.request.method).toEqual("GET");
+    //         villainsService_mock.getVillains = () => {
+    //             of(expectedVillains)
+    //         }
 
-            // Force response with mock villains
-            req.flush(expectedVillains);
-        })
+    //     });
+
+    //     it("should return expected villains (called once)", () => {
+    //         heroService.getVillains().subscribe(
+    //             villains => expect(villains).toEqual(expectedVillains, 'should return expected villains'),
+    //             fail
+    //         );
+
+    //         // VillainsService should NOT make a call to httpclient
+    //         const req = httpTestingController.expectNone(villainsService_mock.villainsUrl);
+    //         // expect(req.request.method).toEqual("GET");
+
+    //         // Force response with mock villains
+    //         // req.flush(expectedVillains);
+    //     })
     })
 
     describe('#getHeroes', () => {

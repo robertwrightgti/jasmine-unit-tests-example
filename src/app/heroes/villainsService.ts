@@ -8,6 +8,7 @@ import { catchError } from 'rxjs/operators';
 import { HttpErrorHandler, HandleError } from '../http-error-handler.service';
 import { Hero } from './hero';
 import { Villain } from './villain';
+import { EvilPlanFactory } from './evilPlanFactory';
 
 const httpOptions = {
     headers: new HttpHeaders({
@@ -24,8 +25,9 @@ export class VillainsService {
     
     constructor(
         private http: HttpClient,
+        private evilPlanFactory: EvilPlanFactory,
         httpErrorHandler: HttpErrorHandler) {
-            this.handleError = httpErrorHandler.createHandleError('MyService');
+            this.handleError = httpErrorHandler.createHandleError('VillainsService');
     }
 
     lastWords(): string {

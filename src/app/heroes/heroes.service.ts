@@ -8,6 +8,7 @@ import { catchError } from 'rxjs/operators';
 import { Hero } from './hero';
 import { HttpErrorHandler, HandleError } from '../http-error-handler.service';
 import { VillainsService } from './villainsService';
+import { Villain } from './villain';
 
 const httpOptions = {
     headers: new HttpHeaders({
@@ -40,7 +41,7 @@ export class HeroesService {
             );
     }
 
-    getVillains(): Observable<Hero[]> {
+    getVillains(): Observable<Villain[]> {
         return this.villainsService.getVillains();
     }
 
