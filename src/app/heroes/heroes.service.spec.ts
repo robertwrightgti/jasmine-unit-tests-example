@@ -88,150 +88,151 @@ describe('HeroesService', () => {
         })
     })
 
-    // describe('#getVillains', () => {
-    //     let expectedVillains: Villain[];
-
-    //     beforeEach(() => {
-    //         heroService = TestBed.get(HeroesService);
-    //         villainsService_mock = TestBed.get(VillainsService);
-
-    //         expectedVillains = [
-    //             { id: 1000, name: 'Doctor Doom' },
-    //             { id: 1001, name: 'Mole Man' }
-    //         ]
-
-    //         villainsService_mock.getVillains = () => {
-    //             of(expectedVillains)
-    //         }
-
-    //     });
-
-    //     it("should return expected villains (called once)", () => {
-    //         heroService.getVillains().subscribe(
-    //             villains => expect(villains).toEqual(expectedVillains, 'should return expected villains'),
-    //             fail
-    //         );
-
-    //         // VillainsService should NOT make a call to httpclient
-    //         const req = httpTestingController.expectNone(villainsService_mock.villainsUrl);
-    //         // expect(req.request.method).toEqual("GET");
-
-    //         // Force response with mock villains
-    //         // req.flush(expectedVillains);
-    //     })
-    })
-
-    describe('#getHeroes', () => {
-        let expectedHeroes: Hero[];
+    describe('#getVillains', () => {
+        let expectedVillains: Villain[];
 
         beforeEach(() => {
             heroService = TestBed.get(HeroesService);
-            expectedHeroes = [
-                { id: 1, name: 'A' },
-                { id: 2, name: 'B' },
-            ] as Hero[];
+            villainsService_mock = TestBed.get(VillainsService);
+
+            expectedVillains = [
+                { id: 1000, name: 'Doctor Doom' },
+                { id: 1001, name: 'Mole Man' }
+            ]
+
+            // mock service method > return an observable
+            villainsService_mock.getVillains = () => of(expectedVillains);
+
         });
 
-        it('should return expected heroes (called once)', () => {
-
-            heroService.getHeroes().subscribe(
-                heroes => expect(heroes).toEqual(expectedHeroes, 'should return expected heroes'),
-                fail
+        it("should return expected villains", () => {
+            heroService.getVillains().subscribe(
+                villains => 
+                    expect(villains).toEqual(expectedVillains, 'should return expected villains'),
+                    fail
             );
 
-            // HeroService should have made one request to GET heroes from expected URL
-            const req = httpTestingController.expectOne(heroService.heroesUrl);
-            expect(req.request.method).toEqual('GET');
+            // VillainsService should NOT make a call to httpclient
+            // const req = httpTestingController.expectNone(villainsService_mock.villainsUrl);
+            // expect(req.request.method).toEqual("GET");
 
-            // Respond with the mock heroes
-            req.flush(expectedHeroes);
-        });
+            // Force response with mock villains
+            // req.flush(expectedVillains);
+        })
+    })
 
-        it('should be OK returning no heroes', () => {
+    // describe('#getHeroes', () => {
+    //     let expectedHeroes: Hero[];
 
-            heroService.getHeroes().subscribe(
-                heroes => expect(heroes.length).toEqual(0, 'should have empty heroes array'),
-                fail
-            );
+    //     beforeEach(() => {
+    //         heroService = TestBed.get(HeroesService);
+    //         expectedHeroes = [
+    //             { id: 1, name: 'A' },
+    //             { id: 2, name: 'B' },
+    //         ] as Hero[];
+    //     });
 
-            const req = httpTestingController.expectOne(heroService.heroesUrl);
-            req.flush([]); // Respond with no heroes
-        });
+    //     it('should return expected heroes (called once)', () => {
 
-        // This service reports the error but finds a way to let the app keep going.
-        it('should turn 404 into an empty heroes result', () => {
+    //         heroService.getHeroes().subscribe(
+    //             heroes => expect(heroes).toEqual(expectedHeroes, 'should return expected heroes'),
+    //             fail
+    //         );
 
-            heroService.getHeroes().subscribe(
-                heroes => expect(heroes.length).toEqual(0, 'should return empty heroes array'),
-                fail
-            );
+    //         // HeroService should have made one request to GET heroes from expected URL
+    //         const req = httpTestingController.expectOne(heroService.heroesUrl);
+    //         expect(req.request.method).toEqual('GET');
 
-            const req = httpTestingController.expectOne(heroService.heroesUrl);
+    //         // Respond with the mock heroes
+    //         req.flush(expectedHeroes);
+    //     });
 
-            // respond with a 404 and the error message in the body
-            const msg = 'deliberate 404 error';
-            req.flush(msg, { status: 404, statusText: 'Not Found' });
-        });
+    //     it('should be OK returning no heroes', () => {
 
-        it('should return expected heroes (called multiple times)', () => {
+    //         heroService.getHeroes().subscribe(
+    //             heroes => expect(heroes.length).toEqual(0, 'should have empty heroes array'),
+    //             fail
+    //         );
 
-            heroService.getHeroes().subscribe();
-            heroService.getHeroes().subscribe();
-            heroService.getHeroes().subscribe(
-                heroes => expect(heroes).toEqual(expectedHeroes, 'should return expected heroes'),
-                fail
-            );
+    //         const req = httpTestingController.expectOne(heroService.heroesUrl);
+    //         req.flush([]); // Respond with no heroes
+    //     });
 
-            const requests = httpTestingController.match(heroService.heroesUrl);
-            expect(requests.length).toEqual(3, 'calls to getHeroes()');
+    //     // This service reports the error but finds a way to let the app keep going.
+    //     it('should turn 404 into an empty heroes result', () => {
 
-            // Respond to each request with different mock hero results
-            requests[0].flush([]);
-            requests[1].flush([{ id: 1, name: 'bob' }]);
-            requests[2].flush(expectedHeroes);
-        });
-    });
+    //         heroService.getHeroes().subscribe(
+    //             heroes => expect(heroes.length).toEqual(0, 'should return empty heroes array'),
+    //             fail
+    //         );
 
-    describe('#updateHero', () => {
-        // Expecting the query form of URL so should not 404 when id not found
-        const makeUrl = (id: number) => `${heroService.heroesUrl}/?id=${id}`;
+    //         const req = httpTestingController.expectOne(heroService.heroesUrl);
 
-        it('should update a hero and return it', () => {
+    //         // respond with a 404 and the error message in the body
+    //         const msg = 'deliberate 404 error';
+    //         req.flush(msg, { status: 404, statusText: 'Not Found' });
+    //     });
 
-            const updateHero: Hero = { id: 1, name: 'A' };
+    //     it('should return expected heroes (called multiple times)', () => {
 
-            heroService.updateHero(updateHero).subscribe(
-                data => expect(data).toEqual(updateHero, 'should return the hero'),
-                fail
-            );
+    //         heroService.getHeroes().subscribe();
+    //         heroService.getHeroes().subscribe();
+    //         heroService.getHeroes().subscribe(
+    //             heroes => expect(heroes).toEqual(expectedHeroes, 'should return expected heroes'),
+    //             fail
+    //         );
 
-            // HeroService should have made one request to PUT hero
-            const req = httpTestingController.expectOne(heroService.heroesUrl);
-            expect(req.request.method).toEqual('PUT');
-            expect(req.request.body).toEqual(updateHero);
+    //         const requests = httpTestingController.match(heroService.heroesUrl);
+    //         expect(requests.length).toEqual(3, 'calls to getHeroes()');
 
-            // Expect server to return the hero after PUT
-            const expectedResponse = new HttpResponse(
-                { status: 200, statusText: 'OK', body: updateHero });
-            req.event(expectedResponse);
-        });
+    //         // Respond to each request with different mock hero results
+    //         requests[0].flush([]);
+    //         requests[1].flush([{ id: 1, name: 'bob' }]);
+    //         requests[2].flush(expectedHeroes);
+    //     });
+    // });
 
-        // This service reports the error but finds a way to let the app keep going.
-        it('should turn 404 error into return of the update hero', () => {
-            const updateHero: Hero = { id: 1, name: 'A' };
+    // describe('#updateHero', () => {
+    //     // Expecting the query form of URL so should not 404 when id not found
+    //     const makeUrl = (id: number) => `${heroService.heroesUrl}/?id=${id}`;
 
-            heroService.updateHero(updateHero).subscribe(
-                data => expect(data).toEqual(updateHero, 'should return the update hero'),
-                fail
-            );
+    //     it('should update a hero and return it', () => {
 
-            const req = httpTestingController.expectOne(heroService.heroesUrl);
+    //         const updateHero: Hero = { id: 1, name: 'A' };
 
-            // respond with a 404 and the error message in the body
-            const msg = 'deliberate 404 error';
-            req.flush(msg, { status: 404, statusText: 'Not Found' });
-        });
-    });
+    //         heroService.updateHero(updateHero).subscribe(
+    //             data => expect(data).toEqual(updateHero, 'should return the hero'),
+    //             fail
+    //         );
+
+    //         // HeroService should have made one request to PUT hero
+    //         const req = httpTestingController.expectOne(heroService.heroesUrl);
+    //         expect(req.request.method).toEqual('PUT');
+    //         expect(req.request.body).toEqual(updateHero);
+
+    //         // Expect server to return the hero after PUT
+    //         const expectedResponse = new HttpResponse(
+    //             { status: 200, statusText: 'OK', body: updateHero });
+    //         req.event(expectedResponse);
+    //     });
+
+    //     // This service reports the error but finds a way to let the app keep going.
+    //     it('should turn 404 error into return of the update hero', () => {
+    //         const updateHero: Hero = { id: 1, name: 'A' };
+
+    //         heroService.updateHero(updateHero).subscribe(
+    //             data => expect(data).toEqual(updateHero, 'should return the update hero'),
+    //             fail
+    //         );
+
+    //         const req = httpTestingController.expectOne(heroService.heroesUrl);
+
+    //         // respond with a 404 and the error message in the body
+    //         const msg = 'deliberate 404 error';
+    //         req.flush(msg, { status: 404, statusText: 'Not Found' });
+    //     });
+    // });
 
     // TODO: test other HeroService methods
+
 });
